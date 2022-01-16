@@ -1,11 +1,15 @@
 #include "WiFi.h"
 #include "AsyncUDP.h"
 #include "include.h"
+ 
 
 const char * ssid = "airport";
 const char * password = "f2da1cf58dc09633edb4c83742877a88d215130190ae2277f49ea99b24";
 
+#define DAC1 25
 forza_union forza_data;
+
+
 
 uint8_t test[] = { 0x01, 0x00, 0x00, 0x00, 0x8d, 0x95, 0x60, 0x0e, 0xf8, 0xbf, 0xda,
                    0x45, 0x38, 0x3f, 0x4b, 0x44, 0xe6, 0x50, 0x4a, 0x45, 0xfc, 0x91, 0x9e,
@@ -56,19 +60,19 @@ void setup()
     Serial.print("UDP Listening on IP: ");
     Serial.println(WiFi.localIP());
     udp.onPacket([](AsyncUDPPacket packet) {
-      Serial.print("UDP Packet Type: ");
-      Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
-      Serial.print(", From: ");
-      Serial.print(packet.remoteIP());
-      Serial.print(":");
-      Serial.print(packet.remotePort());
-      Serial.print(", To: ");
-      Serial.print(packet.localIP());
-      Serial.print(":");
-      Serial.print(packet.localPort());
-      Serial.print(", Length: ");
-      Serial.print(packet.length());
-      Serial.print(", Data: ");
+//      Serial.print("UDP Packet Type: ");
+//      Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
+//      Serial.print(", From: ");
+//      Serial.print(packet.remoteIP());
+//      Serial.print(":");
+//      Serial.print(packet.remotePort());
+//      Serial.print(", To: ");
+//      Serial.print(packet.localIP());
+//      Serial.print(":");
+//      Serial.print(packet.localPort());
+//      Serial.print(", Length: ");
+//      Serial.print(packet.length());
+//      Serial.print(", Data: ");
       //Serial.write(packet.data(), packet.length());
       Serial.println();
       for (int x = 0; x < packet.length(); x++) {
@@ -76,12 +80,12 @@ void setup()
       }
       //reply to the client
       //packet.printf("Got %u bytes of data", packet.length());
-
+      printf("Speed: %f Gear: %d CurrentEngineRpm: %f Brake: %d AccelerationX: %f\n",forza_data.output.Speed*3.6,forza_data.output.Gear, forza_data.output.CurrentEngineRpm,forza_data.output.Brake,forza_data.output.AccelerationX); // meters per second
 //      printf("IsRaceOn: %d\n", forza_data.output.IsRaceOn); // = 1 when race is on. = 0 when in menus/race stopped …
 //      printf("TimestampMS: %d\n", forza_data.output.TimestampMS); //Can overflow to 0 eventually
 //      printf("EngineMaxRpm: %f\n", forza_data.output.EngineMaxRpm);
 //      printf("EngineIdleRpm: %f\n", forza_data.output.EngineIdleRpm);
-        printf("CurrentEngineRpm: %f\n", forza_data.output.CurrentEngineRpm);
+//        printf("CurrentEngineRpm: %f\n", forza_data.output.CurrentEngineRpm);
 //      printf("AccelerationX: %f\n", forza_data.output.AccelerationX); //In the car's local space: %f\n",forza_data.output.); X = right, Y = up, Z = forward
 //      printf("AccelerationY: %f\n", forza_data.output.AccelerationY);
 //      printf("AccelerationZ: %f\n", forza_data.output.AccelerationZ);
@@ -138,7 +142,7 @@ void setup()
 //      printf("PositionX: %f\n", forza_data.output.PositionX);
 //      printf("PositionY: %f\n", forza_data.output.PositionY);
 //      printf("PositionZ: %f\n", forza_data.output.PositionZ);
-//      printf("Speed: %f\n", forza_data.output.Speed); // meters per second
+//        printf("Speed: %f\n", forza_data.output.Speed); // meters per second
 //      printf("Power: %f\n", forza_data.output.Power); // watts
 //      printf("Torque: %f\n", forza_data.output.Torque); // newton meter
 //      printf("TireTempFrontLeft: %f\n", forza_data.output.TireTempFrontLeft);
@@ -168,9 +172,11 @@ void setup()
 
 void loop()
 {
-  delay(1000);
-
+  uint8_t speed_out;
+  //delay(1000);
+  speed_out = map(forza_data.output.Speed,0,50,0,255);
+  dacWrite(DAC1, speed_out);
 
   //Send broadcast
-  udp.broadcast("Anyone here?");
+  //udp.broadcast("Anyone here?");
 }
