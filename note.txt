@@ -1,0 +1,2 @@
+tcprewrite --infile=forzapart.pcap --outfile=forzasim.pcap --dstipmap=from:to --srcipmap=from:to --enet-dmac=xx:xx:... --enet-smac=xx:xx:... --fixcsum
+sudo tcpreplay -i ifname --pps=100 forzasim.pcap
